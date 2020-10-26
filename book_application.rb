@@ -41,7 +41,7 @@ class BookApplication < Roda
     r.public if opts[:serve_static]
 
     r.root do
-      r.redirect '/books'
+      r.redirect('/books')
     end
 
     r.on 'books' do
@@ -74,6 +74,23 @@ class BookApplication < Roda
             end
           end
         end
+
+        r.on 'delete' do
+          r.get do
+            @parameters = {}
+            view('book_delete')
+          end
+
+          r.post do
+            @parameters = DryResultFormeWrapper.new(BookDeleteSchema.call(r.params))
+            if @parameters.success?
+              opts[:books].delete_book(@book.id)
+              r.redirect('/books')
+            else
+              view('book_delete')
+            end
+          end
+        end
       end
 
       r.on 'new' do
@@ -86,7 +103,7 @@ class BookApplication < Roda
           @parameters = DryResultFormeWrapper.new(BookFormSchema.call(r.params))
           if @parameters.success?
             opts[:books].add_book(@parameters)
-            r.redirect '/books'
+            r.redirect('/books')
           else
             view('book_new')
           end
